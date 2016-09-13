@@ -4,9 +4,9 @@ import UIKit
 
 /* Section 1: Set up the variables to be calculated, a and b
  */
-let a: Double = 6.1
+let a: Double = 4.1
 
-let b: Double = 2
+let b: Double = 0
 
 /* Section 2: Perform the designated operations */
 //Addition operation
