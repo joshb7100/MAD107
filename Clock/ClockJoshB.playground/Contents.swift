@@ -31,5 +31,5 @@ seconds+=1
             }
     }
     //Sleep function causes it to wait 1 one second before continuing.
-    sleep(1)
+   sleep(1)
 }
