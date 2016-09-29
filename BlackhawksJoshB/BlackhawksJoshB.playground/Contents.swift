@@ -215,7 +215,7 @@ else{
 
 //Ryan Hartman
 i+=1
-dpindex[39] = i;
+dpindex[38] = i;
 names.append("Ryan Hartman")
 heightf.append(6)
 heighti.append(0)
