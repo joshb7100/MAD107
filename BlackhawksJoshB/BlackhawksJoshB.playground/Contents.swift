@@ -1323,7 +1323,7 @@ for i = 0; i < sortedcountry.count - 1; i+=1{
 //Print out "[Player] is from [Country]" to confirm that like countries are grouped together.
 i = 0
 for i = 0; i < sortedcountry.count; i+=1{
-    var pname = names[dpindex[sortedage[i]]!]
+    var pname = names[dpindex[sortedcountry[i]]!]
     var pcountry = country[dpindex[sortedcountry[i]]!]
 	print(pname + " is from " + pcountry)
 }
