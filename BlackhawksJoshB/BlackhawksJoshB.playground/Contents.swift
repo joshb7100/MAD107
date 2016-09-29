@@ -13,6 +13,7 @@
 
 import UIKit
 
+//Set up the dictionary, and all the arrays used to store info on players
 var dpindex = [Int:Int]()
 var names = [String]()
 var heightf = [Int]()
@@ -22,6 +23,7 @@ var bmonth = [Int]()
 var byear = [Int]()
 var country = [String]()
 var age = [Int]()
+//Arrays and variables used in the actual problem solving
 var sortedage = [Int]()
 var sortedcountry = [Int]()
 var avgage: Double = 0
@@ -29,7 +31,9 @@ var avgfeet: Double = 0
 var avginches: Double = 0
 var birthdaymonths: [Int] = [0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-
+/*Set up all the player info, each player block will input their playernumber:arrayindex value into the dictionary
+Then all of the necessary data will be appended to the arrays which will be at the array index.
+Once the given info is inputted it will calculate the players age and append that to the age array as well. */
 
 var i = 0
 //Spencer Abbott
@@ -1227,7 +1231,7 @@ else{
 }
 
 
-//ACTUAL CODE FINALLY
+/* //Code to swap out the age appending from within the player blocks and do it at the end. Wait til it works normally before uncommenting.
 for i in byear{
 if(bmonth[i] < 9){
     age.append(2015-byear[i])
@@ -1244,19 +1248,24 @@ else{
     age.append(2016-byear[i])
 }
 }
+*/
 
 // 1 - Create a list of players sorted by age
+//Populate the sortedage array with the playernumbers to be sorted.
 for key in dpindex.keys{
 sortedage.append(key)
 sortedcountry.append(key)
 }
 
+//Do a for loop in order to do a bubblesort on the array.
 for i = 0; i < sortedage.count - 1; i+=1{
+	//compare players birth year, if year is older move them up in the array
 	if(byear[dpindex[sortedage[i]]]< byear[dpindex[sortedage[i+1]]]){
 	var tempkey = sortedage[i+1]
 	sortedage[i+1] = sortedage[i]
 	sortedage[i] = tempkey
 	}
+	//When birthyears are equal go to the birthmonth or birthday etc.
 	else if(byear[dpindex[sortedage[i]]]== byear[dpindex[sortedage[i+1]]]){
 		if(bmonth[dpindex[sortedage[i]]]< bmonth[dpindex[sortedage[i+1]]]){
 		var tempkey = sortedage[i+1]
@@ -1273,29 +1282,33 @@ for i = 0; i < sortedage.count - 1; i+=1{
 		}
 	
 	}
-	
+
+//Print out "[Player]'s birthday is [month]/[day][year]" in order through the sorted age array to confirm they are sorted.
 for i in sortedage{
 	print(names[dpindex[sortedage[i]]] + "'s birthday is " + bmonth[dpindex[sortedage[i]]] + "/" + bday[dpindex[sortedage[i]]] + "/" + byear[dpindex[sortedage[i]]])
 }
 
 // 2 - Create a list of players sorted by country
-
+//Bubble sort the players by country
 for i = 0; i < sortedcountry.count - 1; i+=1{
 	if(country[dpindex[sortedcountry[i]]] > country[dpindex[sortedcountry[i]]]){
 		var tempkey = sortedcountry[i+1]
 		sortedcountry[i+1] = sortedcountry[i]
 		sortedcountry[i] = tempkey
+		//Because more than 1 player can be from a country we need to move back 2 indices whenever we swap so to make sure it keeps like countries together.
 		if(i != 0){
 			i-= 2
 		}
 	}
 }
 
+//Print out "[Player] is from [Country]" to confirm that like countries are grouped together.
 for i in sortecountry{
 	print(names[dpindex[sortedcountry[i]]] + "is from" + country[dpindex[sortedcountry[i]]])
 }
 
 // 3 - Calculate the average age of the players
+//Add together all ages from the age array and then divide by number of players
 for i in age{
 	avgage+= age[i]
 }
@@ -1306,26 +1319,36 @@ print("The Blackhawks average age is \(avgage) years old.")
 
 // 4 - Calculate the average height of the players
 
+//Add together all the feet and all the inches from their respective arrays
 for i in heightf{
 	avgfeet += heightf[i]
 	avginches += heighi[i]
 }
 
+//Add the mod 12 of the inches divided by 12 to feet, since they are more than a foot.
 avgfeet += (avginches - (avginches % 12))/12
+//mod the avginches to account for the switch
 avginches = avginches % 12
+//Since feet might not be divisible by the number of players convert the mod of the feet by the players back to inches
 avginches += (avgfeet % heightf.count) * 12
+//Account for the switch in the feet
 avgfeet = avgfeet - (avgfeet % heightf.count)
+//Divide the feet by number of players (should be an even number)
 avgfeet = avgfeet/(height.count)
+//Divide inches by number of players (most likely not a round number)
 avginches = avginches/(heightf.count)
 
 print("The Blackhawks average height is \(avgfeet) feet and \(avginches) inches.")
 
 
  //5 - Determine the month in which most of the players birthday falls
+ 
+ //Populate birthdaymonths by just checking the birth month array
  for i in bmonth{
 	 birthdaymonths[bmonth[i]] += 1
  }
  
+ //Determine the month with the most birthdays by comparing them and storing the highest month in a variable
  var monthmost = 0
  for i in birthdaymonths{
 	 if(birthdaymonths[i] > birthdaymonths[monthmost]){
@@ -1333,6 +1356,7 @@ print("The Blackhawks average height is \(avgfeet) feet and \(avginches) inches.
 	 }
  }
  
+ //Based on the month with the highest birthdays print out the statement below with the correct month.
  print(The month with the most Blackhawks birthdays is:)
  switch(monthmost){
 	 case 1: print("January")
@@ -1350,4 +1374,5 @@ print("The Blackhawks average height is \(avgfeet) feet and \(avginches) inches.
 	 default: print("ERROR")
  }
  
+ //Celebrate
  print("WE'RE DONE YAY")
