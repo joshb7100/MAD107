@@ -24,7 +24,7 @@ var country = [String]()
 var age = [Int]()
 var sortedage = [Int]()
 var sortedcountry = [Int]()
-var avgyears: Double = 0
+var avgage: Double = 0
 var avgfeet: Double = 0
 var avginches: Double = 0
 var birthdaymonths: [Int] = [0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -1244,3 +1244,110 @@ else{
     age.append(2016-byear[i])
 }
 }
+
+// 1 - Create a list of players sorted by age
+for key in dpindex.keys{
+sortedage.append(key)
+sortedcountry.append(key)
+}
+
+for i = 0; i < sortedage.count - 1; i+=1{
+	if(byear[dpindex[sortedage[i]]]< byear[dpindex[sortedage[i+1]]]){
+	var tempkey = sortedage[i+1]
+	sortedage[i+1] = sortedage[i]
+	sortedage[i] = tempkey
+	}
+	else if(byear[dpindex[sortedage[i]]]== byear[dpindex[sortedage[i+1]]]){
+		if(bmonth[dpindex[sortedage[i]]]< bmonth[dpindex[sortedage[i+1]]]){
+		var tempkey = sortedage[i+1]
+		sortedage[i+1] = sortedage[i]
+		sortedage[i] = tempkey
+		}
+		else if(bmonth[dpindex[sortedage[i]]]== bmonth[dpindex[sortedage[i+1]]]){
+			if(bday[dpindex[sortedage[i]]]< bday[dpindex[sortedage[i+1]]]){
+				var tempkey = sortedage[i+1]
+				sortedage[i+1] = sortedage[i]
+				sortedage[i] = tempkey
+				}
+			}
+		}
+	
+	}
+	
+for i in sortedage{
+	print(names[dpindex[sortedage[i]]] + "'s birthday is " + bmonth[dpindex[sortedage[i]]] + "/" + bday[dpindex[sortedage[i]]] + "/" + byear[dpindex[sortedage[i]]])
+}
+
+// 2 - Create a list of players sorted by country
+
+for i = 0; i < sortedcountry.count - 1; i+=1{
+	if(country[dpindex[sortedcountry[i]]] > country[dpindex[sortedcountry[i]]]){
+		var tempkey = sortedcountry[i+1]
+		sortedcountry[i+1] = sortedcountry[i]
+		sortedcountry[i] = tempkey
+		if(i != 0){
+			i-= 2
+		}
+	}
+}
+
+for i in sortecountry{
+	print(names[dpindex[sortedcountry[i]]] + "is from" + country[dpindex[sortedcountry[i]]])
+}
+
+// 3 - Calculate the average age of the players
+for i in age{
+	avgage+= age[i]
+}
+
+avgage = avgage/ age.count
+print("The Blackhawks average age is \(avgage) years old.")
+
+
+// 4 - Calculate the average height of the players
+
+for i in heightf{
+	avgfeet += heightf[i]
+	avginches += heighi[i]
+}
+
+avgfeet += (avginches - (avginches % 12))/12
+avginches = avginches % 12
+avginches += (avgfeet % heightf.count) * 12
+avgfeet = avgfeet - (avgfeet % heightf.count)
+avgfeet = avgfeet/(height.count)
+avginches = avginches/(heightf.count)
+
+print("The Blackhawks average height is \(avgfeet) feet and \(avginches) inches.")
+
+
+ //5 - Determine the month in which most of the players birthday falls
+ for i in bmonth{
+	 birthdaymonths[bmonth[i]] += 1
+ }
+ 
+ var monthmost = 0
+ for i in birthdaymonths{
+	 if(birthdaymonths[i] > birthdaymonths[monthmost]){
+		 monthmost = i
+	 }
+ }
+ 
+ print(The month with the most Blackhawks birthdays is:)
+ switch(monthmost){
+	 case 1: print("January")
+	 case 2: print("February")
+	 case 3: print("March")
+	 case 4: print("April")
+	 case 5: print("May")
+	 case 6: print("June")
+	 case 7: print("July")
+	 case 8: print("August")
+	 case 9: print("September")
+	 case 10: print("October")
+	 case 11: print("November")
+	 case 12: print("December")
+	 default: print("ERROR")
+ }
+ 
+ print("WE'RE DONE YAY")
