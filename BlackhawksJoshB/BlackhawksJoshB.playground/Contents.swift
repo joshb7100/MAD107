@@ -10,9 +10,7 @@
  
  5 - Determine the month in which most of the players birthday falls
  */
-
-import UIKit
-
+ 
 //Set up the dictionary, and all the arrays used to store info on players
 var dpindex:Dictionary<Int,Int> = [:]
 var names: [String] = []
@@ -1294,7 +1292,7 @@ for i = 0; i < (sortedage.count - 1); i+=1{
 	
 	}
 
-
+print("1: Sorted list by age:")
 //Print out "[Player]'s birthday is [month]/[day][year]" in order through the sorted age array to confirm they are sorted.
 for i = 0; i < sortedage.count; i+=1{
     var pname = names[dpindex[sortedage[i]]!]
@@ -1309,7 +1307,7 @@ for i = 0; i < sortedage.count; i+=1{
 // 2 - Create a list of players sorted by country
 //Bubble sort the players by country
 for i = 0; i < sortedcountry.count - 1; i+=1{
-	if(country[dpindex[sortedcountry[i]]!] < country[dpindex[sortedcountry[i]]!]){
+	if(country[dpindex[sortedcountry[i]]!] > country[dpindex[sortedcountry[i+1]]!]){
 		var tempkey = sortedcountry[i+1]
 		sortedcountry[i+1] = sortedcountry[i]
 		sortedcountry[i] = tempkey
@@ -1320,6 +1318,7 @@ for i = 0; i < sortedcountry.count - 1; i+=1{
 	}
 }
 
+print("\n 2- Sorted list by country.")
 //Print out "[Player] is from [Country]" to confirm that like countries are grouped together.
 i = 0
 for i = 0; i < sortedcountry.count; i+=1{
@@ -1330,11 +1329,12 @@ for i = 0; i < sortedcountry.count; i+=1{
 
 // 3 - Calculate the average age of the players
 //Add together all ages from the age array and then divide by number of players
-for i in age{
+for i = 0; i < age.count; i += 1{
 	avgage += Double(age[i])
 }
 
 avgage = avgage / Double(age.count)
+print("\n 3- Blackhawks Avg Age.")
 print("The Blackhawks average age is \(avgage) years old.")
 
 
@@ -1359,24 +1359,26 @@ avgfeet = avgfeet/(Double(heightf.count))
 //Divide inches by number of players (most likely not a round number)
 avginches = avginches/(Double(heightf.count))
 
+print("\n 4- Blackhawks Avg Height.")
 print("The Blackhawks average height is \(Int(avgfeet)) feet and \(avginches) inches.")
 
 
  //5 - Determine the month in which most of the players birthday falls
  
  //Populate birthdaymonths by just checking the birth month array
- for i in bmonth{
+ for( i = 0; i < bmonth.count; i += 1){
 	 birthdaymonths[bmonth[i]] += 1
  }
  
  //Determine the month with the most birthdays by comparing them and storing the highest month in a variable
  var monthmost = 0
- for i in birthdaymonths{
+ for( i = 0; i < birthdaymonths.count; i += 1){
 	 if(birthdaymonths[i] > birthdaymonths[monthmost]){
 		 monthmost = i
 	 }
  }
  
+ print("\n 5- Month with the most Blackhawks birthdays.")
  //Based on the month with the highest birthdays print out the statement below with the correct month.
  print("The month with the most Blackhawks birthdays is:")
  switch(monthmost){
@@ -1394,7 +1396,4 @@ print("The Blackhawks average height is \(Int(avgfeet)) feet and \(avginches) in
 	 case 12: print("December")
 	 default: print("ERROR")
  }
- 
- //Celebrate
- print("WE'RE DONE YAY")
 
