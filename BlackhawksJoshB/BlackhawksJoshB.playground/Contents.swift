@@ -1318,7 +1318,8 @@ for i = 0; i < sortedcountry.count - 1; i+=1{
 	}
 }
 
-print("\n 2- Sorted list by country.")
+print(" ")
+print("2- Sorted list by country.")
 //Print out "[Player] is from [Country]" to confirm that like countries are grouped together.
 i = 0
 for i = 0; i < sortedcountry.count; i+=1{
@@ -1334,7 +1335,8 @@ for i = 0; i < age.count; i += 1{
 }
 
 avgage = avgage / Double(age.count)
-print("\n 3- Blackhawks Avg Age.")
+print(" ")
+print("3- Blackhawks Avg Age.")
 print("The Blackhawks average age is \(avgage) years old.")
 
 
@@ -1359,7 +1361,8 @@ avgfeet = avgfeet/(Double(heightf.count))
 //Divide inches by number of players (most likely not a round number)
 avginches = avginches/(Double(heightf.count))
 
-print("\n 4- Blackhawks Avg Height.")
+print(" ")
+print("4- Blackhawks Avg Height.")
 print("The Blackhawks average height is \(Int(avgfeet)) feet and \(avginches) inches.")
 
 
@@ -1378,7 +1381,8 @@ print("The Blackhawks average height is \(Int(avgfeet)) feet and \(avginches) in
 	 }
  }
  
- print("\n 5- Month with the most Blackhawks birthdays.")
+ print(" ")
+ print("5- Month with the most Blackhawks birthdays.")
  //Based on the month with the highest birthdays print out the statement below with the correct month.
  print("The month with the most Blackhawks birthdays is:")
  switch(monthmost){
