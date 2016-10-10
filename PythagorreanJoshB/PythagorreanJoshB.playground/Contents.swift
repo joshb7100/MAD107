@@ -2,9 +2,10 @@
 
 import Darwin
 
+//Side inputs: Input side lengths for any two sides, and then a negative number for the third so it know which to solve for.
 var side1: Double = 3
 var side2: Double = -1
-var hypotenuse: Double = -1
+var hypotenuse: Double = 5
 
 //closure for calculating the hypotenuse
 let hypotenusecalc = {(side1sqr: Double, side2sqr: Double)-> Double in
