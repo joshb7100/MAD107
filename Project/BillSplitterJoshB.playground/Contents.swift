@@ -55,33 +55,70 @@ var spliteven: Int
 
 
 
-//Define 
+//Define our inputs to be used.
 
-pretaxtotal = 45.52
+pretaxtotal = 45.31
 posttaxtotal = 48.52
 tippercent = 0.20
 numsplit = 5
 spliteven = 1
+splitpercent += [0.40,0.2,0.1,0.15,0.15]
 
+func restaurantSplit (pretax:Double, posttax:Double, tip:Double, split:Int, even: Int) -> Double{
+    //Calculate the tip based on the pretax total.
+    let tipamount: Double = tip * pretax
+    //Determine the final total based on tip + posttax total
+    var finaltot = tipamount + posttax
+    //Round final total to two decimal places
+    finaltot = twodecimal(finaltot)
+    //Calculate out the amount each individual pays either by splitting evenly or taking in the inputted percents
+    if(even == 1){
+        for _ in 1...split{
+        //Append each result that is rounded to two decimals
+            finalsplit.append(twodecimal(finaltot / Double(split)))
+        }
+    }
+    else{
+        for i in 1...split{
+            let splitamt = twodecimal(finaltot * splitpercent[i - 1])
+            //print(splitamt)
+            finalsplit.append(splitamt)
+        }
+    }
+    
+    return finaltot
+}
 
+func twodecimal (number:Double) -> Double{
+    //multiply by 100 se we can round to two decimal places
+    var temp = number * 100
+    //based on whats in the decimal places round up or down
+    if((temp % 1) >= 0.5){
+        temp = temp - (temp % 1) + 1
+    }
+    else{
+        temp = temp - (temp % 1)
+    }
+    //Divide by 100 again to return the number back
+    temp = temp / 100
+    return temp
+}
 
+//Output function to help with printing out the returns from the bill splitting.
+func output (splitamts: [Double], total: Double){
+    print("Including a \(tippercent * 100)% tip, the final total is $\(total)")
+    print("The split amounts accordingly are:")
+    if(spliteven == 1){
+        print("Each person pays an even split of $\(splitamts[0])")
+    }
+    else{
+        for i in 1...numsplit{
+         print("\(splitpercent[i - 1] * 100)% will be $\(splitamts[i - 1])")
+        }
+    }
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//Run our restaurantSplit function with our defined inputs
+finaltotal = restaurantSplit(pretaxtotal,posttax: posttaxtotal,tip: tippercent,split: numsplit, even: spliteven)
+//Call our output function to print out the results.
+output(finalsplit, total: finaltotal)
