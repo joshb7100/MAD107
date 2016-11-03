@@ -36,12 +36,65 @@ Could also add in just a random function for paying someone back such as gas for
     |                                      |
     |                                      |
     |                                      |
-    _______________________________________
-
-
-
+     _______________________________________
 
 */
+//An array to store multiple bills in order to switch between them
+
+
+var billArray = [bill]()
+billArray
+
+enum billType{
+    case restaurant
+    case rent
+    case tip
+    case other
+    case undefined
+}
+
+class bill{
+    var type: billType = .undefined
+    var final: Double = 0
+    var numsplit: Int = 0
+    var percent: [Double] = []
+    var finsplit: [Double] = []
+    var even: Int = 1
+    var arrayNum = -1
+    func switchBill(){
+        billArray[currBill.arrayNum] = currBill
+        currBill = billArray[self.arrayNum]
+    }
+    
+}
+
+class restBill: bill{
+    var pretax: Double
+    var posttax: Double
+    var tip: Double
+    override init(){
+        self.pretax = 0
+        self.posttax = 0
+        self.tip = 0
+        super.init()
+        self.type = .restaurant
+        self.final = 0
+        self.numsplit = 0
+        self.percent = []
+        self.finsplit = []
+        self.even = 1
+        self.arrayNum = billArray.count
+        print(arrayNum)
+        billArray.insert(self, atIndex: arrayNum)
+    }
+}
+
+
+
+var currBill: bill = restBill()
+
+currBill = restBill()
+
 
 //Set up any necessary variables
 var pretaxtotal: Double
@@ -52,7 +105,6 @@ var numsplit: Int
 var splitpercent: [Double] = []
 var finalsplit: [Double] = []
 var spliteven: Int
-
 
 
 //Define our inputs to be used.
@@ -122,3 +174,5 @@ func output (splitamts: [Double], total: Double){
 finaltotal = restaurantSplit(pretaxtotal,posttax: posttaxtotal,tip: tippercent,split: numsplit, even: spliteven)
 //Call our output function to print out the results.
 output(finalsplit, total: finaltotal)
+
+
