@@ -42,6 +42,7 @@ Could also add in just a random function for paying someone back such as gas for
 //An array to store multiple bills in order to switch between them
 var currBillindex: Int = -1
 
+//Enumeration used for error checking to make sure we use the correct bill type in functions.
 enum billType{
     case restaurant
     case rent
@@ -50,6 +51,9 @@ enum billType{
     case undefined
 }
 
+/***************************************************************************************************************************
+ General class for a bill, typically just used for storing subclasses into an array as well as some other helper functions.
+ **************************************************************************************************************************/
 class bill{
     var type: billType
     var ftotal: Double
@@ -61,6 +65,7 @@ class bill{
     func switchBill(){
         currBillindex = arrayNum
     }
+    //These functions are used for converting the bill class in the array to the respective subclass.
     func restaurant() -> restBill{
         if(self.type == .restaurant){
             return self as! restBill}
@@ -78,6 +83,16 @@ class bill{
             return rentBill()
         }
     }
+    func tip() -> tipBill{
+        if(self.type == .tip){
+            return self as! tipBill
+        }
+        else{
+            print("INVALID TYPECAST!!! Returning an empty tipBill class to avoid error")
+            return tipBill()
+        }
+    }
+        
     init(){
         self.type = .undefined
         self.ftotal = 0
@@ -87,9 +102,38 @@ class bill{
         self.even = 1
         self.arrayNum = billArray.count
         billArray.insert(self, atIndex: arrayNum)
+        currBillindex = arrayNum
     }
 }
 
+/**********************************************************************************************
+ Class for a tip calculator. Subclass of a bill. Much simpler than other classes since it doesn't
+ bother with splitting between multiple people.
+ *********************************************************************************************/
+class tipBill: bill{
+    var pretax: Double
+    var posttax: Double
+    var tip: Double
+    override init(){
+        self.pretax = 0
+        self.posttax = 0
+        self.tip = 0
+        super.init()
+        self.type = .tip
+        self.ftotal = 0
+    }
+    //Function to easily set multiple variables in the class at once.
+    func set(pretax:Double, posttax:Double,tip:Double){
+        self.pretax = pretax
+        self.posttax = posttax
+        self.tip = tip
+    }
+}
+
+/**********************************************************************************************
+ Class for a restaurant bill, subclass of bill and is used to split a restaurant bill amongst
+ multiple people as well as calculate a tip for you.
+ *********************************************************************************************/
 class restBill: bill{
     var pretax: Double
     var posttax: Double
@@ -106,8 +150,67 @@ class restBill: bill{
         self.finsplit = []
         self.even = 1
     }
+    //Function to easily set multiple variables in the class at once.
+    func set(pretax:Double, posttax:Double,tip:Double,numsplit:Int,percent:[Double],even:Int){
+        self.pretax = pretax
+        self.posttax = posttax
+        self.tip = tip
+        self.numsplit = numsplit
+        self.percent = percent
+        self.even = even
+    }
+    func restaurantSplit(){
+        if(self.type != .restaurant){
+            print("Invalid bill type. Please make sure to pass in a Restaurant Bill")
+            return
+        }
+        //Clear the final split array of any pregenerated outputs.
+        self.finsplit = []
+        //Calculate the tip based on the pretax total.
+        let tipamount: Double = self.tip * self.pretax
+        //Determine the final total based on tip + posttax total
+        var finaltot = tipamount + self.posttax
+        //Round final total to two decimal places
+        finaltot = twodecimal(finaltot)
+        //Calculate out the amount each individual pays either by splitting evenly or taking in the inputted percents
+        if(self.even == 1){
+            for _ in 1...self.numsplit{
+                //Append each result that is rounded to two decimals
+                self.finsplit.append(twodecimal(finaltot / Double(self.numsplit)))
+            }
+        }
+        else{
+            for i in 1...self.numsplit{
+                let splitamt = twodecimal(finaltot * self.percent[i - 1])
+                //print(splitamt)
+                self.finsplit.append(splitamt)
+            }
+        }
+        self.ftotal = finaltot
+    }
+    func output(){
+        if(self.type != .restaurant){
+            print("Invalid bill type. Please make sure to pass in a Restaurant Bill")
+            return
+        }
+        print("Including a \(self.tip * 100)% tip, the final total is $\(ze(self.ftotal))")
+        print("The split amounts accordingly are:")
+        if(self.even == 1){
+            print("Each of the \(self.numsplit) people pays an even split of $\(ze(self.finsplit[0]))")
+        }
+        else{
+            for i in 1...self.numsplit{
+                print("\(self.percent[i - 1] * 100)% will be $\(ze(self.finsplit[i - 1]))")
+            }
+        }
+        print(" ")
+    }
 }
 
+/**********************************************************************************************
+    Class for a rent bill, subclass of a general bill. Used for splitting rent
+ between multiple people.
+ *********************************************************************************************/
 class rentBill: bill{
     var rent: Double
     var cable: Double
@@ -136,68 +239,91 @@ class rentBill: bill{
         self.finsplit = []
         self.even = 1
     }
+    //Function to easily set multiple variables in the class at once.
+    func set(rent:Double, cable:Double,electric:Double,water:Double,sanitation:Double,internet:Double,heat:Double,other:[Double],numsplit:Int,percent:[Double],even:Int){
+        self.rent = rent
+        self.cable = cable
+        self.electric = electric
+        self.water = water
+        self.sanitation = sanitation
+        self.internet = internet
+        self.heat = heat
+        self.other = []
+        self.other = other
+        self.numsplit = numsplit
+        self.percent = []
+        self.percent = percent
+        self.even = even
+    }
+    func rentSplit(){
+        if(self.type != .rent){
+            print("Invalid bill type. Please make sure to pass in a Rent Bill")
+            return
+        }
+        //Clear the final split array of any pregenerated outputs.
+        self.finsplit = []
+        //Calculate the total of any elements in the other array
+        for i in 0...(self.other.count - 1){
+            self.othertot += self.other[i]
+        }
+        
+        
+        //Calculate the final rent total from all of the utilities
+        var finaltot: Double = 0
+        finaltot += self.rent
+        finaltot += self.cable
+        finaltot += self.electric
+        finaltot += self.water
+        finaltot += self.sanitation
+        finaltot += self.internet
+        finaltot += self.heat
+        //Round final total to two decimal places
+        finaltot = twodecimal(finaltot)
+        //Calculate out the amount each individual pays either by splitting evenly or taking in the inputted percents
+        if(self.even == 1){
+            for _ in 1...self.numsplit{
+                //Append each result that is rounded to two decimals
+                self.finsplit.append(twodecimal(finaltot / Double(self.numsplit)))
+            }
+        }
+        else{
+            for i in 1...self.numsplit{
+                let splitamt = twodecimal(finaltot * self.percent[i - 1])
+                //print(splitamt)
+                self.finsplit.append(splitamt)
+            }
+        }
+        self.ftotal = finaltot
+    }
+    func output(){
+        if(self.type != .rent){
+            print("Invalid bill type. Please make sure to pass in a Rent Bill")
+            return
+        }
+        print("The costs are as follows:")
+        print("Initial rent: $\(ze(self.rent))")
+        print("Cable: $\(ze(self.cable))")
+        print("Electric: $\(ze(self.electric))")
+        print("Water: $\(ze(self.water))")
+        print("Sanitation: $\(ze(self.sanitation))")
+        print("Internet: $\(ze(self.internet))")
+        print("Heat: $\(ze(self.heat))")
+        print("Other (total): $\(ze(self.othertot))")
+        print(" ")
+        print("The total cost is $\(ze(self.ftotal))")
+        print("The split amounts accordingly are:")
+        if(self.even == 1){
+            print("Each of the \(self.numsplit) people pays an even split of $\(ze(self.finsplit[0]))")
+        }
+        else{
+            for i in 1...self.numsplit{
+                print("\(self.percent[i - 1] * 100)% will be $\(ze(self.finsplit[i - 1]))")
+            }
+        }
+    }
 }
-
-
 
 var billArray = [bill]()
-
-var currBill: bill = restBill()
-currBill.switchBill()
-
-
-//Set up any necessary variables
-/*
-var pretaxtotal: Double
-var posttaxtotal: Double
-var tippercent: Double
-var finaltotal: Double
-var numsplit: Int
-var splitpercent: [Double] = []
-var finalsplit: [Double] = []
-var spliteven: Int
-*/
-
-
-//Define our inputs to be used for Bill #1
-print("Create Bill #1, fill in inputs and generate output:")
-billArray[currBillindex].restaurant().pretax = 45.31
-billArray[currBillindex].restaurant().posttax = 48.52
-billArray[currBillindex].restaurant().tip = 0.20
-billArray[currBillindex].numsplit = 5
-billArray[currBillindex].even = 0
-billArray[currBillindex].percent += [0.40,0.2,0.1,0.15,0.15]
-
-func restaurantSplit (billIndex: Int) -> Double{
-    if(billArray[billIndex].type != .restaurant){
-        print("Invalid bill type. Please make sure to pass in a Restaurant Bill")
-        return 0
-    }
-    //Clear the final split array of any pregenerated outputs.
-    billArray[billIndex].finsplit = []
-    //Calculate the tip based on the pretax total.
-    let tipamount: Double = billArray[billIndex].restaurant().tip * billArray[billIndex].restaurant().pretax
-    //Determine the final total based on tip + posttax total
-    var finaltot = tipamount + billArray[billIndex].restaurant().posttax
-    //Round final total to two decimal places
-    finaltot = twodecimal(finaltot)
-    //Calculate out the amount each individual pays either by splitting evenly or taking in the inputted percents
-    if(billArray[billIndex].even == 1){
-        for _ in 1...billArray[billIndex].numsplit{
-        //Append each result that is rounded to two decimals
-            billArray[billIndex].finsplit.append(twodecimal(finaltot / Double(billArray[billIndex].numsplit)))
-        }
-    }
-    else{
-        for i in 1...billArray[billIndex].numsplit{
-            let splitamt = twodecimal(finaltot * billArray[billIndex].percent[i - 1])
-            //print(splitamt)
-            billArray[billIndex].finsplit.append(splitamt)
-        }
-    }
-    
-    return finaltot
-}
 
 func twodecimal (number:Double) -> Double{
     //multiply by 100 se we can round to two decimal places
@@ -214,138 +340,46 @@ func twodecimal (number:Double) -> Double{
     return temp
 }
 
-//Output function to help with printing out the returns from the restaurant bill splitting.
-func restOutput (billIndex: Int){
-    if(billArray[billIndex].type != .restaurant){
-        print("Invalid bill type. Please make sure to pass in a Restaurant Bill")
-        return
+//Function to zero extend any number to two decimal points for string output.
+func ze (number:Double) -> String{
+    var s:String
+    s = String(number)
+    if(((number * 10) % 1) == 0){
+        s+="0"
+        
     }
-    print("Including a \(billArray[billIndex].restaurant().tip * 100)% tip, the final total is $\(billArray[billIndex].ftotal)")
-    print("The split amounts accordingly are:")
-    if(billArray[billIndex].even == 1){
-        print("Each of the \(billArray[billIndex].numsplit) people pays an even split of $\(billArray[billIndex].finsplit[0])")
-    }
-    else{
-        for i in 1...billArray[billIndex].numsplit{
-         print("\(billArray[billIndex].percent[i - 1] * 100)% will be $\(billArray[billIndex].finsplit[i - 1])")
-        }
-    }
-    print(" ")
+    return s
 }
 
-func rentSplit (billIndex: Int) -> Double{
-    if(billArray[billIndex].type != .rent){
-        print("Invalid bill type. Please make sure to pass in a Rent Bill")
-        return 0
-    }
-    //Clear the final split array of any pregenerated outputs.
-    billArray[billIndex].finsplit = []
-    //Calculate the total of any elements in the other array
-    for i in 0...(billArray[billIndex].rent().other.count - 1){
-        billArray[billIndex].rent().othertot += billArray[billIndex].rent().other[i]
-    }
-    
-    
-    //Calculate the final rent total from all of the utilities
-    var finaltot: Double = 0
-    finaltot += billArray[billIndex].rent().rent
-    finaltot += billArray[billIndex].rent().cable
-    finaltot += billArray[billIndex].rent().electric
-    finaltot += billArray[billIndex].rent().water
-    finaltot += billArray[billIndex].rent().sanitation
-    finaltot += billArray[billIndex].rent().internet
-    finaltot += billArray[billIndex].rent().heat
-    //Round final total to two decimal places
-    finaltot = twodecimal(finaltot)
-    //Calculate out the amount each individual pays either by splitting evenly or taking in the inputted percents
-    if(billArray[billIndex].even == 1){
-        for _ in 1...billArray[billIndex].numsplit{
-            //Append each result that is rounded to two decimals
-            billArray[billIndex].finsplit.append(twodecimal(finaltot / Double(billArray[billIndex].numsplit)))
-        }
-    }
-    else{
-        for i in 1...billArray[billIndex].numsplit{
-            let splitamt = twodecimal(finaltot * billArray[billIndex].percent[i - 1])
-            //print(splitamt)
-            billArray[billIndex].finsplit.append(splitamt)
-        }
-    }
-    return finaltot
-}
-
-//Output function to help with printing out the returns from the rent bill splitting.
-func rentOutput (billIndex: Int){
-    if(billArray[billIndex].type != .rent){
-        print("Invalid bill type. Please make sure to pass in a Rent Bill")
-        return
-    }
-    print("The costs are as follows:")
-    print("Initial rent: $\(billArray[billIndex].rent().rent)")
-    print("Cable: $\(billArray[billIndex].rent().cable)")
-    print("Electric: $\(billArray[billIndex].rent().electric)")
-    print("Water: $\(billArray[billIndex].rent().water)")
-    print("Sanitation: $\(billArray[billIndex].rent().sanitation)")
-    print("Internet: $\(billArray[billIndex].rent().internet)")
-    print("Heat: $\(billArray[billIndex].rent().heat)")
-    print("Other (total): $\(billArray[billIndex].rent().othertot)")
-    print(" ")
-    print("The total cost is $\(billArray[billIndex].ftotal)")
-    print("The split amounts accordingly are:")
-    if(billArray[billIndex].even == 1){
-        print("Each of the \(billArray[billIndex].numsplit) people pays an even split of $\(billArray[billIndex].finsplit[0])")
-    }
-    else{
-        for i in 1...billArray[billIndex].numsplit{
-            print("\(billArray[billIndex].percent[i - 1] * 100)% will be $\(billArray[billIndex].finsplit[i - 1])")
-        }
-    }
-}
-
+//Define our inputs to be used for Bill #1
+var currBill: bill = restBill()
+print("Create Bill #1, fill in inputs and generate output:")
+billArray[currBillindex].restaurant().set(45.31, posttax:48.52, tip:0.20, numsplit:5, percent:[0.40,0.2,0.1,0.15,0.15], even:0)
 //Run our restaurantSplit function with our defined inputs
-billArray[currBillindex].ftotal = restaurantSplit(currBillindex)
+billArray[currBillindex].restaurant().restaurantSplit()
 //Call our output function to print out the results.
-restOutput(currBillindex)
+billArray[currBillindex].restaurant().output()
 
 currBill = restBill()
-currBill.switchBill()
 
 //Bill #2 inputs
 print("Create Bill #2, switch to it, fill in inputs and output results:")
-billArray[currBillindex].restaurant().pretax = 158.32
-billArray[currBillindex].restaurant().posttax = 183.21
-billArray[currBillindex].restaurant().tip = 0.15
-billArray[currBillindex].numsplit = 8
-billArray[currBillindex].even = 0
-billArray[currBillindex].percent += [0.1,0.2,0.1,0.05,0.05,0.1,0.1,0.3]
-billArray[currBillindex].ftotal = restaurantSplit(currBillindex)
-restOutput(currBillindex)
+billArray[currBillindex].restaurant().set(158.32, posttax:183.21, tip:0.15, numsplit:8, percent:[0.1,0.2,0.1,0.05,0.05,0.1,0.1,0.3], even:1)
+billArray[currBillindex].restaurant().restaurantSplit()
+billArray[currBillindex].restaurant().output()
 
 //Switch back to bill 1
 print("Switch back to Bill #1, change input and regenerate outputs:")
 billArray[0].switchBill()
 billArray[currBillindex].restaurant().tip = 0.1
-billArray[currBillindex].ftotal = restaurantSplit(currBillindex)
-restOutput(currBillindex)
+billArray[currBillindex].restaurant().restaurantSplit()
+billArray[currBillindex].restaurant().output()
 
 //Create a new Rent Bill
 currBill = rentBill()
-currBill.switchBill()
-
-billArray[currBillindex].rent().rent = 2200
-billArray[currBillindex].rent().cable = 53.21
-billArray[currBillindex].rent().electric = 23.75
-billArray[currBillindex].rent().water = 68.9
-billArray[currBillindex].rent().sanitation = 10
-billArray[currBillindex].rent().internet = 24
-billArray[currBillindex].rent().heat = 38.81
-billArray[currBillindex].rent().other.appendContentsOf([51.2, 12.4, 0.41, 5.99])
-billArray[currBillindex].numsplit = 8
-billArray[currBillindex].even = 0
-billArray[currBillindex].percent += [0.1,0.2,0.1,0.05,0.05,0.1,0.1,0.3]
-billArray[currBillindex].ftotal = rentSplit(currBillindex)
-
-rentOutput(currBillindex)
+billArray[currBillindex].rent().set(2200, cable:53.21, electric:23.75, water:68.9, sanitation:10, internet:24, heat:38.81, other:[51.2, 12.4, 0.41, 5.99], numsplit:8, percent:[0.1,0.2,0.1,0.05,0.05,0.1,0.1,0.3], even:0)
+billArray[currBillindex].rent().rentSplit()
+billArray[currBillindex].rent().output()
 
 
 
