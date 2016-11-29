@@ -51,6 +51,32 @@ enum billType{
     case undefined
 }
 
+func twodecimal (number:Double) -> Double{
+    //multiply by 100 se we can round to two decimal places
+    var temp = number * 100
+    //based on whats in the decimal places round up or down
+    if((temp % 1) >= 0.5){
+        temp = temp - (temp % 1) + 1
+    }
+    else{
+        temp = temp - (temp % 1)
+    }
+    //Divide by 100 again to return the number back
+    temp = temp / 100
+    return temp
+}
+
+//Function to zero extend any number to two decimal points for string output.
+func ze (number:Double) -> String{
+    var s:String
+    s = String(number)
+    if(((number * 10) % 1) == 0){
+        s+="0"
+        
+    }
+    return s
+}
+
 /***************************************************************************************************************************
  General class for a bill, typically just used for storing subclasses into an array as well as some other helper functions.
  **************************************************************************************************************************/
@@ -92,6 +118,15 @@ class bill{
             return tipBill()
         }
     }
+    func other() -> otherBill{
+        if(self.type == .other){
+            return self as! otherBill
+        }
+        else{
+            print("INVALID TYPECAST!!! Returning an empty otherBill class to avoid error")
+            return otherBill()
+        }
+    }
         
     init(){
         self.type = .undefined
@@ -122,11 +157,185 @@ class tipBill: bill{
         self.type = .tip
         self.ftotal = 0
     }
+    func errcheck(funcnum: Int) -> Int{
+        var errval: Int = 0
+        if(self.type != .tip){
+            print("Invalid bill type. Please make sure to pass in a Tip Calculation")
+            return -1
+        }
+        if(self.pretax < 0){
+            print("Pretax input amount is negative.")
+            errval = -1
+        }
+        if(self.posttax < 0){
+            print("Posttax input amount is negative.")
+            errval = -1
+        }
+        if(self.tip < 0){
+            print("Tip percent is negative.")
+            errval = -1
+        }
+        if(self.posttax < self.pretax){
+            print("Posttax amount is less than pretax amount.")
+            errval = -1
+        }
+        if(funcnum == 1){
+            if(ftotal == 0){
+                print("Total is $0, please check inputs and run calculator.")
+                errval = -1
+            }
+        }
+        return errval
+    }
+    func tipCalc(){
+        let errnum: Int = self.errcheck(0)
+        if(errnum < 0){
+            print("Cannot continue with Calculation until specified errors are fixed")
+        }
+        //Calculate the tip based on the pretax total.
+        let tipamount: Double = self.tip * self.pretax
+        //Determine the final total based on tip + posttax total
+        var finaltot = tipamount + self.posttax
+        //Round final total to two decimal places
+        finaltot = twodecimal(finaltot)
+        self.ftotal = finaltot
+    }
+    func output(){
+        let errnum: Int = self.errcheck(1)
+        if(errnum < 0){
+            print("Cannot continue with Output until specified errors are fixed")
+            return
+        }
+        print("Including a \(self.tip * 100)% tip, the final total is $\(ze(self.ftotal))")
+        print(" ")
+    }
     //Function to easily set multiple variables in the class at once.
     func set(pretax:Double, posttax:Double,tip:Double){
         self.pretax = pretax
         self.posttax = posttax
         self.tip = tip
+    }
+}
+
+/**********************************************************************************************
+ Class for any other bill. Subclass of a bill. It is used to split between anyother type of desired payment.
+ *********************************************************************************************/
+class otherBill: bill{
+    var amounts: [Double]
+    override init(){
+        self.amounts = []
+        super.init()
+        self.type = .other
+        self.ftotal = 0
+        self.numsplit = 0
+        self.percent = []
+        self.finsplit = []
+        self.even = 1
+    }
+    func errcheck(funcnum: Int) -> Int{
+        var errval: Int = 0
+        if(self.type != .other){
+            print("Invalid bill type. Please make sure to pass in an OtherBill")
+            return -1
+        }
+        if(self.amounts == []){
+            print("No values in amounts, please input values.")
+            return -1
+        }
+        for i in 0...(amounts.count - 1){
+            if(amounts[i] < 0){
+                print("Value in index \(i) of amounts is negative.")
+                errval = -1
+            }
+        }
+        if(numsplit <= 0){
+            print("Cannot split between less than one person")
+            errval = -1
+        }
+        if((self.even < 0) || (self.even > 1)){
+            print("Invalid input for Even value, use 0 or 1.")
+            errval = -1
+        }
+        if((self.even == 0) && (percent.count != numsplit)){
+            print("Numsplit doesn't equal the number of values in percent.")
+            errval = -1
+        }
+        if(self.even == 0){
+        var temp: Double = 0
+            for i in 0...(percent.count - 1){
+                if(percent[i] < 0){
+                    print("Value in index \(i) of percent is negative.")
+                }
+                temp += percent[i] 
+            }
+            if(temp < 1){
+                print("The values in percent only add up to \(temp*100)%. Please fix the values.")
+                errval = -1
+            }
+            if(temp > 1){
+                print("The values in percent add up to \(temp*100)%. Be aware that this is greater than 100%")
+            }
+        }
+        if(funcnum == 1){
+            if(ftotal == 0){
+                print("Total is $0, please check inputs and run calculator.")
+                errval = -1
+            }
+        }
+        return errval
+    }
+    func otherSplit(){
+        let errnum: Int = self.errcheck(0)
+        if(errnum < 0){
+            print("Cannot continue with Output until specified errors are fixed")
+            return
+        }
+        //Clear the final split array of any pregenerated outputs.
+        self.finsplit = []
+        var finaltot: Double = 0
+        for i in 0...(self.amounts.count - 1){
+            finaltot += self.amounts[i]
+            }
+        //Calculate out the amount each individual pays either by splitting evenly or taking in the inputted percents
+        if(self.even == 1){
+            for _ in 1...self.numsplit{
+                //Append each result that is rounded to two decimals
+                self.finsplit.append(twodecimal(finaltot / Double(self.numsplit)))
+            }
+        }
+        else{
+            for i in 1...self.numsplit{
+                let splitamt = twodecimal(finaltot * self.percent[i - 1])
+                //print(splitamt)
+                self.finsplit.append(splitamt)
+            }
+        }
+        self.ftotal = finaltot
+    }
+    func output(){
+        let errnum: Int = self.errcheck(1)
+        if(errnum < 0){
+            print("Cannot continue with Output until specified errors are fixed")
+            return
+        }
+        print("The total of the passed in amounts was $\(ze(self.ftotal)).")
+        print("The split amounts accordingly are:")
+        if(self.even == 1){
+            print("Each of the \(self.numsplit) people pays an even split of $\(ze(self.finsplit[0]))")
+        }
+        else{
+            for i in 1...self.numsplit{
+                print("\(self.percent[i - 1] * 100)% will be $\(ze(self.finsplit[i - 1]))")
+            }
+        }
+        print(" ")
+    }
+    //Function to easily set multiple variables in the class at once.
+    func set(amts: [Double], numsplit: Int, percent: [Double], even: Int){
+        self.amounts = amts
+        self.numsplit = numsplit
+        self.percent = percent
+        self.even = even
     }
 }
 
@@ -150,6 +359,64 @@ class restBill: bill{
         self.finsplit = []
         self.even = 1
     }
+    func errcheck(funcnum: Int) -> Int{
+        var errval: Int = 0
+        if(self.type != .restaurant){
+            print("Invalid bill type. Please make sure to pass in a RestaurantBill")
+            return -1
+        }
+        if(self.pretax < 0){
+            print("Pretax input amount is negative.")
+            errval = -1
+        }
+        if(self.posttax < 0){
+            print("Posttax input amount is negative.")
+            errval = -1
+        }
+        if(self.tip < 0){
+            print("Tip percent is negative.")
+            errval = -1
+        }
+        if(self.posttax < self.pretax){
+            print("Posttax amount is less than pretax amount.")
+            errval = -1
+        }
+        if(numsplit <= 0){
+            print("Cannot split between less than one person")
+            errval = -1
+        }
+        if((self.even < 0) || (self.even > 1)){
+            print("Invalid input for Even value, use 0 or 1.")
+            errval = -1
+        }
+        if((self.even == 0) && (percent.count != numsplit)){
+            print("Numsplit doesn't equal the number of values in percent.")
+            errval = -1
+        }
+        if(self.even == 0){
+        var temp: Double = 0
+            for i in 0...(percent.count - 1){
+                if(percent[i] < 0){
+                    print("Value in index \(i) of percent is negative.")
+                }
+               temp += percent[i] 
+            }
+            if(temp < 1){
+                print("The values in percent only add up to \(temp*100)%. Please fix the values.")
+                errval = -1
+            }
+            if(temp > 1){
+                print("The values in percent add up to \(temp*100)%. Be aware that this is greater than 100%")
+            }
+        }
+        if(funcnum == 1){
+            if(ftotal == 0){
+                print("Total is $0, please check inputs and run calculator.")
+                errval = -1
+            }
+        }
+        return errval
+    }
     //Function to easily set multiple variables in the class at once.
     func set(pretax:Double, posttax:Double,tip:Double,numsplit:Int,percent:[Double],even:Int){
         self.pretax = pretax
@@ -160,8 +427,9 @@ class restBill: bill{
         self.even = even
     }
     func restaurantSplit(){
-        if(self.type != .restaurant){
-            print("Invalid bill type. Please make sure to pass in a Restaurant Bill")
+        let errnum: Int = self.errcheck(0)
+        if(errnum < 0){
+            print("Cannot continue with Calculation until specified errors are fixed")
             return
         }
         //Clear the final split array of any pregenerated outputs.
@@ -189,8 +457,9 @@ class restBill: bill{
         self.ftotal = finaltot
     }
     func output(){
-        if(self.type != .restaurant){
-            print("Invalid bill type. Please make sure to pass in a Restaurant Bill")
+        let errnum: Int = self.errcheck(1)
+        if(errnum < 0){
+            print("Cannot continue with Output until specified errors are fixed")
             return
         }
         print("Including a \(self.tip * 100)% tip, the final total is $\(ze(self.ftotal))")
@@ -239,6 +508,75 @@ class rentBill: bill{
         self.finsplit = []
         self.even = 1
     }
+    func errcheck(funcnum: Int) -> Int{
+        var errval: Int = 0
+        if(self.type != .rent){
+            print("Invalid bill type. Please make sure to pass in a rentBill")
+            return -1
+        }
+        if(rent < 0){
+            print("Rent amount is negative.")
+        }
+        if(cable < 0){
+            print("Cable amount is negative.")
+        }
+        if(electric < 0){
+            print("Electric amount is negative.")
+        }
+        if(water < 0){
+            print("Water amount is negative.")
+        }
+        if(sanitation < 0){
+            print("Sanitation amount is negative.")
+        }
+        if(internet < 0){
+            print("Internet amount is negative.")
+        }
+        if(heat < 0){
+            print("Heat amount is negative.")
+        }
+        for i in 0...(other.count - 1){
+            if(other[i] < 0){
+                print("Value in index \(i) of other is negative.")
+                errval = -1
+            }
+        }
+        if(numsplit <= 0){
+            print("Cannot split between less than one person")
+            errval = -1
+        }
+        if((self.even < 0) || (self.even > 1)){
+            print("Invalid input for Even value, use 0 or 1.")
+            errval = -1
+        }
+        if((self.even == 0) && (percent.count != numsplit)){
+            print("Numsplit doesn't equal the number of values in percent.")
+            errval = -1
+        }
+        if(self.even == 0){
+        var temp: Double = 0
+            for i in 0...(percent.count - 1){
+                if(percent[i] < 0){
+                    print("Value in index \(i) of percent is negative.")
+                }
+               temp += percent[i] 
+            }
+            if(temp < 1){
+                print("The values in percent only add up to \(temp*100)%. Please fix the values.")
+                errval = -1
+            }
+            if(temp > 1){
+                print("The values in percent add up to \(temp*100)%. Be aware that this is greater than 100%")
+            }
+        }
+        if(funcnum == 1){
+            if(ftotal == 0){
+                print("Total is $0, please check inputs and run calculator.")
+                errval = -1
+            }
+        }
+        return errval
+    }
     //Function to easily set multiple variables in the class at once.
     func set(rent:Double, cable:Double,electric:Double,water:Double,sanitation:Double,internet:Double,heat:Double,other:[Double],numsplit:Int,percent:[Double],even:Int){
         self.rent = rent
@@ -256,8 +594,9 @@ class rentBill: bill{
         self.even = even
     }
     func rentSplit(){
-        if(self.type != .rent){
-            print("Invalid bill type. Please make sure to pass in a Rent Bill")
+        let errnum: Int = self.errcheck(0)
+        if(errnum < 0){
+            print("Cannot continue with Calculation until specified errors are fixed")
             return
         }
         //Clear the final split array of any pregenerated outputs.
@@ -266,8 +605,6 @@ class rentBill: bill{
         for i in 0...(self.other.count - 1){
             self.othertot += self.other[i]
         }
-        
-        
         //Calculate the final rent total from all of the utilities
         var finaltot: Double = 0
         finaltot += self.rent
@@ -296,8 +633,9 @@ class rentBill: bill{
         self.ftotal = finaltot
     }
     func output(){
-        if(self.type != .rent){
-            print("Invalid bill type. Please make sure to pass in a Rent Bill")
+        let errnum: Int = self.errcheck(1)
+        if(errnum < 0){
+            print("Cannot continue with Output until specified errors are fixed")
             return
         }
         print("The costs are as follows:")
@@ -320,40 +658,15 @@ class rentBill: bill{
                 print("\(self.percent[i - 1] * 100)% will be $\(ze(self.finsplit[i - 1]))")
             }
         }
+        print(" ")
     }
 }
 
 var billArray = [bill]()
 
-func twodecimal (number:Double) -> Double{
-    //multiply by 100 se we can round to two decimal places
-    var temp = number * 100
-    //based on whats in the decimal places round up or down
-    if((temp % 1) >= 0.5){
-        temp = temp - (temp % 1) + 1
-    }
-    else{
-        temp = temp - (temp % 1)
-    }
-    //Divide by 100 again to return the number back
-    temp = temp / 100
-    return temp
-}
-
-//Function to zero extend any number to two decimal points for string output.
-func ze (number:Double) -> String{
-    var s:String
-    s = String(number)
-    if(((number * 10) % 1) == 0){
-        s+="0"
-        
-    }
-    return s
-}
-
 //Define our inputs to be used for Bill #1
 var currBill: bill = restBill()
-print("Create Bill #1, fill in inputs and generate output:")
+print("*****First Bill Creation*****")
 billArray[currBillindex].restaurant().set(45.31, posttax:48.52, tip:0.20, numsplit:5, percent:[0.40,0.2,0.1,0.15,0.15], even:0)
 //Run our restaurantSplit function with our defined inputs
 billArray[currBillindex].restaurant().restaurantSplit()
@@ -363,24 +676,36 @@ billArray[currBillindex].restaurant().output()
 currBill = restBill()
 
 //Bill #2 inputs
-print("Create Bill #2, switch to it, fill in inputs and output results:")
+print("*****Bill #2 Test*****")
 billArray[currBillindex].restaurant().set(158.32, posttax:183.21, tip:0.15, numsplit:8, percent:[0.1,0.2,0.1,0.05,0.05,0.1,0.1,0.3], even:1)
 billArray[currBillindex].restaurant().restaurantSplit()
 billArray[currBillindex].restaurant().output()
 
 //Switch back to bill 1
-print("Switch back to Bill #1, change input and regenerate outputs:")
+print("*****Switch to Bill#1 Test*****")
 billArray[0].switchBill()
 billArray[currBillindex].restaurant().tip = 0.1
 billArray[currBillindex].restaurant().restaurantSplit()
 billArray[currBillindex].restaurant().output()
 
 //Create a new Rent Bill
+print("*****RentBill Test*****")
 currBill = rentBill()
 billArray[currBillindex].rent().set(2200, cable:53.21, electric:23.75, water:68.9, sanitation:10, internet:24, heat:38.81, other:[51.2, 12.4, 0.41, 5.99], numsplit:8, percent:[0.1,0.2,0.1,0.05,0.05,0.1,0.1,0.3], even:0)
 billArray[currBillindex].rent().rentSplit()
 billArray[currBillindex].rent().output()
 
+//Create a new tip Calculation
+print("*****Tip Calculator Test*****")
+currBill = tipBill()
+billArray[currBillindex].tip().set(25.30, posttax:29.12, tip:0.2)
+billArray[currBillindex].tip().tipCalc()
+billArray[currBillindex].tip().output()
 
-
+//Creat a new otherBill
+print("*****Other Bill Test*****")
+currBill = otherBill()
+billArray[currBillindex].other().set([51.2, 12.4, 0.41, 5.99], numsplit:5, percent:[0.40,0.2,0.1,0.15,0.15], even:0)
+billArray[currBillindex].other().otherSplit()
+billArray[currBillindex].other().output()
 
